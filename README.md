@@ -1,10 +1,13 @@
 # Neo4j_courses_selection_system
 Ass for USYD
 
-## CONTENT
+## CONTENTS
+-  [1. Nodes](#1)
+-  [2. Relationships](#2)
 
-## Nodes
+## Nodes <a id='1'></a>
 ![image](https://user-images.githubusercontent.com/53165197/141645823-c1bf414b-a543-482b-a196-2cc0230d8683.png)
+
 Figure 1. Unit Node
 
 These are all relationships and nodes I have set in my graph. The green one is degree; two dark blue nodes are student node. Left nodes are all unit nodes. Each of unit node has 8 properties. Just shows as Figure 2. 
@@ -18,12 +21,15 @@ These are all relationships and nodes I have set in my graph. The green one is d
 “title” means the name of the course.
 
 ![image](https://user-images.githubusercontent.com/53165197/141645846-a6c58c55-a590-40eb-b865-cf7fdd01f93e.png)
+ 
 Figure 2. Unit Properties.           
   
 ![image](https://user-images.githubusercontent.com/53165197/141645869-d8ec9ce6-e5a4-4787-a68f-959e8df553ce.png)
+ 
 Figure 3. Degree Properties            
   
 ![image](https://user-images.githubusercontent.com/53165197/141645871-8c56a858-54ba-497f-9685-0d87c5b631c6.png)
+ 
 Figure 4. Student Properties
 
 I only set one degree which is “MATH”. Figure 3 is the properties of math degree. 
@@ -38,9 +44,8 @@ Figure 4 is the properties of student.
 “name” means student’s name.
 “sid” is a unique property, used to find student we need.
 
-## Relationships:
+## Relationships <a id='2'></a>
 “PREREQUISITE”: Need to complete the courses listed in PREREQUISITE before taking this course. Example: A prerequisite B, then you have to complete B before taking A.
 “PROHIBITED”: Not able to take this course if already completed one of the courses listed in PROHIBITED. Example: A prohibited B. If you completed B, then cannot take A.
 “OR”: If there is a OR relationship between courses in the prerequisite list of a course, then only need to choose one of them to meet the requirements. Example: A prerequisite B OR C, complete either B or C can take A.
 “AND”:  If there is a AND relationship between courses in the prerequisite list of a course, then must complete both to meet the requirement. Example: A prerequisite (B OR C) AND D. You need to complete (B and D) or (C and D) to meet the requirement.
-![image](https://user-images.githubusercontent.com/53165197/141645819-04180b15-24ce-4958-917f-23a4933276e6.png)
