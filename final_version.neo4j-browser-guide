@@ -1,0 +1,308 @@
+<article class="guide" >
+  <carousel class="deck container-fluid">
+    <slide class="row-fluid">
+    <div class="col-sm-4">
+      <h3>Graph Building</h3>
+      <p>In this part, running the code on the right side will imports the data in the data file. It will create nodes for <code>units</code> and <code>degree</code>.Each unit node will store the name, code, grade, credits, prohibited courses, prerequisite courses, and nearly replacement courses. The degree node will store the degree code, degree name, total credit requirements, credit requirements for each grade.  
+      </p>
+      <p>In addition, the following <code>relationships</code> are set：</p>
+        <ol class="big">
+          <li>PREREQUISITE: A->B, take course B before take A.</li>
+          <li>PROHIBITED: A-B, can not take A and B together.</li>
+          <li>OR: A-B, can take A or B.</li>
+          <li>AND: A-B, have to take both A and B.</li>
+      </ol>
+	  </div>
+	  <div class="col-sm-8">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+
+// load degree
+CALL apoc.load.json("file:///degrees.json") YIELD value
+CREATE (
+    d:Degree {
+        code: value.code,
+        name: value.name, 
+        total_cp_min_req: value.total_cp_min_req, 
+        level_100_cp_min_req: value.level_100_cp_min_req,
+        level_200_cp_min_req: value.level_200_cp_min_req,
+        level_300_cp_min_req: value.level_300_cp_min_req,
+        level_400_cp_min_req: value.level_400_cp_min_req
+    }
+);
+
+// load units
+CALL apoc.load.json("file:///units.json") YIELD value
+CREATE (
+    u:Unit{
+        code: value.code,
+        title: value.title,
+        level: value.level,
+        cp: value.cp,
+        prerequisite: value.prerequisite,
+        prohibited: value.prohibited,
+        or: value.or
+    }
+);
+
+
+// set relationship
+// prerequisite
+MATCH (u1:Unit), (u2:Unit)
+WHERE u1.code IN u2.prerequisite
+MERGE (u2)-[:PREREQUISITE]->(u1);
+
+// prohibited
+MATCH (u1:Unit), (u2:Unit)
+WHERE u1.code IN u2.prohibited
+MERGE (u2)-[:PROHIBITED]-(u1);
+
+// OR
+MATCH (u1:Unit), (u2:Unit)
+WHERE u1.code IN u2.or
+MERGE (u1)-[:OR]-(u2);
+
+// AND
+MATCH (u1:Unit), (u2:Unit), (u3:Unit)
+WHERE u1.code IN u3.prerequisite
+AND u2.code IN u3.prerequisite
+AND u1.code <> u2.code
+AND NOT u1.code IN u2.or
+MERGE (u1)-[:AND]-(u2);
+        </pre>
+        <figcaption>Node and relationship building</figcaption>
+      </figure>
+    </div>
+  </slide>
+    
+
+  <slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Graph Inspection</h3>
+      <p>My graph contains units with the following features:
+      </p>
+      <ol class="big">
+          <li>has no prerequisite</li>
+          <li>has a prohibition list</li>
+          <li>has a list of prerequisites units linked by OR operators</li>
+          <li>has a list of prerequisites units linked by AND and OR operators</li>
+      </ol>
+	  </div>
+	  <div class="col-sm-9">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+
+// has no prerequisite
+MATCH (u:Unit)
+WHERE NOT (u)-[:PREREQUISITE]->(:Unit)
+RETURN u;
+        </pre>
+      </figure>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+// has a prohibition list
+MATCH (u:Unit)
+WHERE u.prohibited <> []
+RETURN u;
+        </pre>
+      </figure>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+// has a list of prerequisites units linked by OR operators
+Match (u:Unit)-[:PREREQUISITE]->(u1:Unit)-[:OR]-(u2:Unit)
+WHERE u2.code in u.prerequisite
+RETURN distinct u;
+        </pre>
+      </figure>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+// has a list of prerequisites units linked by AND and OR operators
+Match (u:Unit)-[:PREREQUISITE]->(u1:Unit)-[:OR]-(u2:Unit)-[:AND]-(u3:Unit)
+WHERE u2.code in u.prerequisite
+AND u3.code in u.prerequisite
+RETURN distinct u;
+        </pre>
+      </figure>
+    </div>
+  </slide>
+
+<slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Prohibition Rule</h3>
+      <p>For this section, first run the top code box to insert the student information. Then make changes to the "Unit Code" input box to check for unit that meet the rules or don't. </p>
+      <ul>
+        <li><code>Math240</code>: prohibited is Math208W. Math208W not in the list of completed courses, should return <code>TRUE</code>. </li>
+        <li><code>Math208W</code>: prohibited is Math232, Math240. Math232 in the list of completed courses, shoud return <code>FALSE</code>. </li>
+      </ul>
+    </div>
+
+    <div class="col-sm-9">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+CREATE (s:Student{name: "Grant", degree: "MATH", sid: "88888888", completed:["Math100", "Math151", "Math152", "Math232"]});
+        </pre>
+      </figure> 
+      <label>Unit Code: </label>
+      <input value-for="p1" id="p1" class="form-control" value="Math240" size="25">
+      <br>
+      <figure>
+        <pre class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding">
+MATCH (u:Unit{code: "<span value-key="p1">Math240</span>"})-[:PROHIBITED]-(u1:Unit), (s: Student{sid: "88888888"})
+WHERE u1.code IN s.completed
+RETURN count(u1)=0 AS allowed;
+		    </pre>
+      </figure>
+      <figcaption>Check prohibition with different unit</figcaption>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Prerequisite Rule</h3>
+      <p>In this section, we are still using student information from last part. Make changes to the "Unit Code" input box to check for unit that meet the rules or don't. </p>
+      <ul>
+        <li><code>Math251</code>: Satisfy, has only "OR"; PREREQUISITE: Math152 OR Math158; Should return <code>TRUE</code>. </li>
+        <li><code>Math308</code>: Satisfy, has both "OR" and "AND"; PREREQUISITE: (Math151 OR Math157) AND Math232; Should return <code>TRUE</code>. </li>
+        <li><code>Math419</code>: Not satisfy, has both "OR" and "AND"; PREREQUISITE: (Math232 OR Math240) AND Math308; Should return <code>FALSE</code>. </li>
+      </ul>
+    </div>
+
+    <div class="col-sm-9">
+      <label>Unit Code: </label>
+      <input value-for="p1" id="p1" class="form-control" value="Math251" size="25">
+      <br>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+MATCH (u:Unit{code: "<span value-key="p1">Math251</span>"})-[:PREREQUISITE]->(u1:Unit)-[:OR]-(u2:Unit), (s:Student{sid: "88888888"})
+OPTIONAL MATCH (u1)-[r:AND]-(u3:Unit)
+WHERE u2.code in u.prerequisite 
+AND u3.code in u.prerequisite
+RETURN DISTINCT
+CASE
+WHEN count(u3)=0 AND (u1.code IN s.completed OR u2.code IN s.completed)
+THEN TRUE
+WHEN count(u3)>0 AND (u1.code IN s.completed OR u2.code IN s.completed) AND u3.code IN s.completed
+THEN TRUE 
+WHEN count(u3)>0 AND NOT u3.code IN s.completed 
+THEN FALSE END AS Satisfied;
+		    </pre>
+      </figure>
+      <figcaption>Check Relationship</figcaption>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Graduation Checking</h3>
+      <p>Insert another student’s information and set the lavel for different level courses in the top code box. This student has completed the degree’s total credit points requirement but does not meet 300 level’s credit points requirements. This code will print out a list of Boolean values, each representing the status of a rule.
+      </p>
+    </div>
+    <div class="col-sm-9">
+      <figure>
+        <pre class="highlight pre-scrollable code runnable">
+CREATE (s:Student{name: "Hank", sid: "66666666", degree: "MATH",completed:["Math100", "Math150", "Math151", "Math152", "Math232", "Math240", "Math251", "Math308", "Math419"]});
+// set label
+MATCH (u:Unit) WHERE u.level = 100
+SET u: Level_100_courses;
+MATCH (u:Unit) WHERE u.level = 200
+SET u: Level_200_courses;
+MATCH (u:Unit) WHERE u.level = 300
+SET u: Level_300_courses;
+MATCH (u:Unit) WHERE u.level = 400
+SET u: Level_400_courses;
+
+        </pre>
+      </figure>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+
+// match and sum cps for each level
+// then compare with degree requirement
+MATCH (s:Student{sid: "66666666"})
+WITH s
+MATCH (one:Level_100_courses)
+WHERE one.code in s.completed
+WITH s, sum(one.cp) as l100
+MATCH (two:Level_200_courses)
+WHERE two.code in s.completed
+WITH s, l100, sum(two.cp) as l200
+MATCH (three:Level_300_courses)
+WHERE three.code in s.completed
+WITH s, l100, l200, sum(three.cp) as l300
+MATCH (four:Level_400_courses)
+WHERE four.code in s.completed
+WITH s, l100, l200, l300, sum(four.cp) as l400
+MATCH (d:Degree{code:s.degree})
+RETURN l100+l200+l300+l400>d.total_cp_min_req as Total_CP,
+l100>=d.level_100_cp_min_req AS Level100_CP,
+l200>=d.level_200_cp_min_req AS Level200_CP,
+l300>=d.level_300_cp_min_req AS Level300_CP,
+l400>=d.level_400_cp_min_req AS Level400_cp;
+        </pre>
+      </figure>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Indirect Prerequisite</h3>
+      <p>In this section, the code will find all 1000 level indirect prerequisite units of a given unit and print out the prerequisite chain from the unit to the 1000 level indirect prerequisite unit and the length of this chain.  </p>
+      <ul>
+        <li><code>Math152</code>: Math152 -> Math151 -> Math150 -> Math100; Should return <code>Length=3</code> and <code>Chain Graph</code>. </li>
+        <li><code>Math157</code>: Math157 -> Math150 -> Math100; Should return <code>Length=2</code> and <code>Chain Graph</code>. </li>
+      </ul>
+    </div>
+
+    <div class="col-sm-9">
+      <label>Unit Code: </label>
+      <input value-for="p1" id="p1" class="form-control" value="Math152" size="25">
+      <br>
+      <figure>
+        <pre class="pre-scrollable code runnable">
+MATCH p=((:Unit{code: "<span value-key="p1">Math152</span>"})-[:PREREQUISITE*]->(:Level_100_courses))
+WITH length(p) as length, p
+RETURN max(length), p;
+		    </pre>
+      </figure>
+      <figcaption>Indirect Prerequisite</figcaption>
+    </div>
+  </slide>
+
+
+  <slide class="row-fluid">
+    <div class="col-sm-3">
+      <h3>Foundational Unit</h3>
+    <p>In this section, the code will find the unit(s) appear- ing in most other unit’s direct or indirect prerequisite list; <code>Math100</code> is expected to return.
+    </p>
+    </div>
+    <div class="col-sm-9">
+      <figure>
+        <pre class="highlight pre-scrollable programlisting cm-s-neo code runnable standalone-example ng-binding">
+MATCH p=((u1:Unit)-[:PREREQUISITE*]->(u2:Unit)) 
+WITH count(u2) as the_num_of_occurrences, u2
+RETURN the_num_of_occurrences, u2
+ORDER BY the_num_of_occurrences DESC
+LIMIT 1;
+        </pre>
+      </figure>
+    </div>
+  </slide>
+
+  <slide class="row-fluid">
+    <div class="col-sm-6">
+      <h3>Clear the Graph</h3>
+      <p> In this section,  the code will delete all nodes and their relationships in the graph.
+      </p>
+	  </div>
+	  <div class="col-sm-6">
+      <figure>
+        <pre class="pre-scrollable code runnable">
+MATCH (n)
+DETACH DELETE n;
+        </pre>
+        <figcaption>Clear all</figcaption>
+      </figure>
+    </div>
+  </slide>
+</carousel>
+</article>

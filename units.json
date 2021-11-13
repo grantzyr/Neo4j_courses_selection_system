@@ -1,0 +1,146 @@
+[
+    {
+        "code": "Math100",
+        "title": "Precalculus",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": [],
+        "or":[]
+    },
+    {
+        "code": "Math150",
+        "title": "Calculus I with Review",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math100"],
+        "or": []
+    },
+    {
+        "code": "Math151",
+        "title": "Calculus I",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math150"],
+        "or": ["Math157"]
+    },
+    {
+        "code": "Math152",
+        "title": "Calculus II",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math151"],
+        "or": ["Math158"]
+    },
+    {
+        "code": "Math157",
+        "title": "Calculus I for the Social Sciences",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math150"],
+        "or": ["Math151"]
+    },
+    {
+        "code": "Math158",
+        "title": "Calculus II for the Social Sciences",
+        "level": 100,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math157"],
+        "or": ["Math152"]
+    },
+    {
+        "code": "Math208W",
+        "title": "Introduction to Operations Research",
+        "level": 200,
+        "cp": 12,
+        "prohibited": ["Math232", "Math240"],
+        "prerequisite": ["Math151", "Math157"],
+        "or": []
+    },
+    {
+        "code": "Math232",
+        "title": "Applied Linear Algebra",
+        "level": 200,
+        "cp": 6,
+        "prohibited": ["Math208W"],
+        "prerequisite": ["Math151", "Math157"],
+        "or": ["Math240"]
+    },
+    {
+        "code": "Math240",
+        "title": "Algebra I: Linear Algebra",
+        "level": 200,
+        "cp": 6,
+        "prohibited": ["Math208W"],
+        "prerequisite": ["Math151", "Math157"],
+        "or": ["Math232"]
+    },
+    {
+        "code": "Math251",
+        "title": "Calculus III",
+        "level": 200,
+        "cp": 12,
+        "prohibited": [],
+        "prerequisite": ["Math152", "Math158"],
+        "or": []
+    },
+    {
+        "code": "Math308",
+        "title": "Linear Optimization",
+        "level": 300,
+        "cp": 6,
+        "prohibited": ["Math380W"],
+        "prerequisite": ["Math151", "Math157", "Math232"],
+        "or": []
+    },
+    {
+        "code": "Math309",
+        "title": "Continuous Optimization",
+        "level": 300,
+        "cp": 6,
+        "prohibited": ["Math380W"],
+        "prerequisite": ["Math232", "Math240"],
+        "or": []
+    },
+    {
+        "code": "Math380W",
+        "title": "History of Mathematics",
+        "level": 300,
+        "cp": 12,
+        "prohibited": ["Math308", "Math309"],
+        "prerequisite": ["Math208W"],
+        "or": []
+    },
+    {
+        "code": "Math408",
+        "title": "Discrete Optimization",
+        "level": 400,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math308"],
+        "or": []
+    },
+    {
+        "code": "Math419",
+        "title": "Linear Analysis",
+        "level": 400,
+        "cp": 6,
+        "prohibited": [],
+        "prerequisite": ["Math232", "Math240", "Math308"],
+        "or": []
+    },
+    {
+        "code": "Math430W",
+        "title": "Operations Research Clinic",
+        "level": 400,
+        "cp": 12,
+        "prohibited": [],
+        "prerequisite": ["Math380W"],
+        "or": []
+    }
+]

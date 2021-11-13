@@ -1,0 +1,11 @@
+[
+    {
+        "code": "MATH",
+        "name": "Mathematics",
+        "total_cp_min_req": 60,
+        "level_100_cp_min_req": 18,
+        "level_200_cp_min_req": 18,
+        "level_300_cp_min_req": 12,
+        "level_400_cp_min_req": 6
+    }
+]
