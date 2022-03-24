@@ -1,5 +1,5 @@
 # Neo4j_courses_selection_system
-Ass for USYD
+
 
 ## CONTENTS
 -  [1. Nodes](#1)
